@@ -20,13 +20,19 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Trust proxy is required if you are behind a reverse proxy (like Railway) and want secure cookies
+app.set('trust proxy', 1);
+
+const isProduction = process.env.NODE_ENV === 'production';
+
 // Session middleware
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || 'baatcheet_secret_key',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction, // true on production
+    sameSite: isProduction ? 'none' : 'lax', // 'none' is required for cross-site cookies
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
   }
